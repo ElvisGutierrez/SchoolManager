@@ -1,0 +1,294 @@
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #e5eaff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: white;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.hide-sm {
+  display: table-cell;
+}
+
+@media (max-width: 768px) {
+  .hide-sm {
+    display: none;
+  }
+}
+
+/*Layout */
+.appShell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.appMain {
+  flex: 1;
+  background: #e5eaff;
+  min-width: 0;
+}
+
+.appHeader {
+  height: 56px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand {
+  font-weight: 800;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profileText {
+  text-align: right;
+}
+
+.profileLabel {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.profileName {
+  font-weight: 600;
+}
+
+.appContent {
+  padding: 16px;
+}
+
+.btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: black;
+  cursor: pointer;
+  color: white;
+}
+.btnIcon {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: black;
+  cursor: pointer;
+}
+.btnOutline {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  color: white;
+  background: black;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  padding: 14px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* .sidebarSpacer {
+  width: 240px;  
+} */
+
+.sidebarTop {
+  align-items: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sidebarTop2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarLogo {
+  height: 70px;
+  border: 2px solid #2563eb;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #2563eb;
+  flex: 1;
+}
+
+.sidebarNav {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+}
+
+.sidebarBottom {
+  margin-top: 14px;
+}
+
+/* Diseño layout */
+.show-sm {
+  display: none;
+}
+.hide-sm {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .show-sm {
+    display: inline-block;
+  }
+  .hide-sm {
+    display: none;
+  }
+
+  .sidebarSpacer {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -260px;
+    z-index: 70;
+    transition: left 0.2s ease;
+  }
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebarOverlay {
+    display: none;
+  }
+  .sidebarOverlay.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 60;
+  }
+
+  .appContent {
+    padding: 12px;
+  }
+
+  .btn {
+    padding: 8px 10px;
+  }
+}
+
+/* Google maps */
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+.gm-ui-hover-effect {
+  top: 0 !important;
+  right: 0 !important;
+}
