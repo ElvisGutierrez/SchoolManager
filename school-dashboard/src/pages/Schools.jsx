@@ -5,17 +5,16 @@ import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 const mapContainerStyle = { width: "100%", height: "320px" };
 
 export default function Schools() {
-  /* const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
   const isAdmin = user?.tipo === "Administrador";
 
-  const [users, setUsers] = useState([]); */
+  const [users, setUsers] = useState([]);
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* const [saving, setSaving] = useState(false); */
-
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+
   const [form, setForm] = useState({
     nombre: "",
     direccion: "",
@@ -23,7 +22,7 @@ export default function Schools() {
     foto: "",
     latitud: null,
     longitud: null,
-    /* user_id: "", */
+    user_id: "",
   });
 
   const defaultCenter = useMemo(() => ({ lat: 13.69294, lng: -89.21819 }), []);
@@ -37,15 +36,14 @@ export default function Schools() {
     setLoading(true);
     try {
       const res = await api.get("/schools");
-      setSchools(res.data);
+      setSchools(res.data || []);
 
-      /* if (isAdmin) {
+      if (isAdmin) {
         const resUsers = await api.get("/users");
         setUsers(resUsers.data || []);
+      } else {
+        setUsers([]);
       }
-
-      if (isAdmin && !form.user_id)
-        return alert("Selecciona un usuario encargado"); */
     } finally {
       setLoading(false);
     }
@@ -53,6 +51,7 @@ export default function Schools() {
 
   useEffect(() => {
     fetchSchools();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openCreate = () => {
@@ -64,7 +63,7 @@ export default function Schools() {
       foto: "",
       latitud: null,
       longitud: null,
-      /* user_id: "", */
+      user_id: "",
     });
     setOpen(true);
   };
@@ -78,7 +77,7 @@ export default function Schools() {
       foto: s.foto ?? "",
       latitud: s.latitud ? Number(s.latitud) : null,
       longitud: s.longitud ? Number(s.longitud) : null,
-      /* user_id: s.user_id ?? "", */
+      user_id: s.user_id ? String(s.user_id) : "",
     });
     setOpen(true);
   };
@@ -90,13 +89,23 @@ export default function Schools() {
   };
 
   const save = async () => {
-    /* if (saving) return; */
     if (!form.nombre.trim()) return alert("Nombre es obligatorio");
+
+    const payload = {
+      nombre: form.nombre,
+      direccion: form.direccion,
+      email: form.email,
+      foto: form.foto,
+      latitud: form.latitud,
+      longitud: form.longitud,
+      ...(isAdmin && form.user_id ? { user_id: Number(form.user_id) } : {}),
+    };
+
     try {
       if (editing) {
-        await api.put(`/schools/${editing.id_school}`, form);
+        await api.put(`/schools/${editing.id_school}`, payload);
       } else {
-        await api.post("/schools", form);
+        await api.post("/schools", payload);
       }
       setOpen(false);
       await fetchSchools();
@@ -107,38 +116,6 @@ export default function Schools() {
         "Error guardando escuela";
       alert(msg);
     }
-    /* const payload = {
-      nombre: form.nombre,
-      direccion: form.direccion,
-      email: form.email,
-      foto: form.foto,
-      latitud: form.latitud,
-      longitud: form.longitud,
-      ...(isAdmin
-        ? { user_id: form.user_id ? Number(form.user_id) : null }
-        : {}),
-    }; */
-
-    /* try {
-      setSaving(true);
-
-      if (editing) {
-        await api.put(`/schools/${editing.id_school}`, payload);
-      } else {
-        await api.post("/schools", payload);
-      }
-
-      setOpen(false);
-      await fetchSchools();
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message ||
-        JSON.stringify(err?.response?.data) ||
-        "Error guardando escuela";
-      alert(msg);
-    } finally {
-      setSaving(false);
-    } */
   };
 
   const remove = async (s) => {
@@ -242,7 +219,6 @@ export default function Schools() {
                       >
                         {s.email || "-"}
                       </td>
-
                       <td
                         style={{
                           padding: 8,
@@ -253,7 +229,6 @@ export default function Schools() {
                           ? `${s.latitud}, ${s.longitud}`
                           : "-"}
                       </td>
-
                       <td>
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button
@@ -365,28 +340,48 @@ export default function Schools() {
                   style={{ width: "100%", padding: 10, marginTop: 6 }}
                 />
               </div>
-
-              {/* {isAdmin && (
+              {/*Modal */}
+              {isAdmin && (
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label>Usuario encargado</label>
-                  <select
-                    value={form.user_id}
-                    onChange={(e) =>
-                      setForm({ ...form, user_id: e.target.value })
-                    }
-                    style={{ width: "100%", padding: 10, marginTop: 6 }}
-                  >
-                    <option value="">-- Sin asignar --</option>
-                    {users
-                      .filter((u) => u.tipo === "Usuario")
-                      .map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.nombre} ({u.usuario})
-                        </option>
-                      ))}
-                  </select>
+
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <select
+                      value={form.user_id}
+                      onChange={(e) =>
+                        setForm({ ...form, user_id: e.target.value })
+                      }
+                      style={{ width: "100%", padding: 10, marginTop: 6 }}
+                    >
+                      <option value={String(user.id)}>
+                        -- Administrador --
+                      </option>
+
+                      {users
+                        .filter((u) => u.tipo === "Usuario")
+                        .map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.nombre} ({u.usuario})
+                          </option>
+                        ))}
+                    </select>
+
+                    {/* <button
+                      type="button"
+                      onClick={() =>
+                        setForm({ ...form, user_id: String(user.id) })
+                      }
+                      style={{
+                        marginTop: 6,
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Asignarme a mí
+                    </button> */}
+                  </div>
                 </div>
-              )} */}
+              )}
 
               <div style={{ gridColumn: "1 / -1" }}>
                 <label>Dirección</label>
@@ -448,12 +443,6 @@ export default function Schools() {
                 marginTop: 12,
               }}
             >
-              <button
-                onClick={() => setOpen(false)}
-                style={{ cursor: "pointer" }}
-              >
-                Cancelar
-              </button>
               <button
                 onClick={() => setOpen(false)}
                 style={{ cursor: "pointer" }}

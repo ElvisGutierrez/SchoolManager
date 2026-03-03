@@ -61,10 +61,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/grados', [GradoController::class, 'index']);
     Route::get('/secciones', [SeccionController::class, 'index']);
 
-    //Usuarios
+    // Usuarios
+    Route::middleware('admin')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    });
 });

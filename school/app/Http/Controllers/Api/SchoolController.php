@@ -25,6 +25,8 @@ class SchoolController extends Controller
     // POST /api/schools
     public function store(Request $request)
     {
+        $auth = $request->user();
+
         $data = $request->validate([
             'nombre' => ['required','string','max:150'],
             'direccion' => ['nullable','string','max:255'],
@@ -32,9 +34,11 @@ class SchoolController extends Controller
             'foto' => ['nullable','string','max:255'],
             'latitud' => ['nullable','numeric'],
             'longitud' => ['nullable','numeric'],
+
+            'user_id' => ['nullable','exists:users,id'],
         ]);
 
-        $data['user_id'] = $request->user()->id;
+        $data['user_id'] = $data['user_id'] ?? $auth->id;
 
         return School::create($data);
     }
