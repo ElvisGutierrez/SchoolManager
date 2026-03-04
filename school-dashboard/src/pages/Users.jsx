@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-export default function Padres() {
-  const [padres, setPadres] = useState([]);
+export default function Users() {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isAdmin = user?.tipo === "Administrador";
+
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
@@ -10,94 +13,157 @@ export default function Padres() {
 
   const [form, setForm] = useState({
     nombre: "",
-    direccion: "",
-    telefono: "",
+    usuario: "",
+    email: "",
+    password: "",
+    tipo: "Usuario",
   });
 
-  const fetchPadres = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/padres");
-      setPadres(res.data || []);
+      const res = await api.get("/users");
+      setUsers(res.data || []);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        JSON.stringify(err?.response?.data) ||
+        "Error cargando usuarios";
+      alert(msg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPadres();
+    if (isAdmin) fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* const openCreate = () => {
+  const openCreate = () => {
     setEditing(null);
-    setForm({ nombre: "", direccion: "", telefono: "" });
-    setOpen(true);
-  }; */
-
-  const openEdit = (p) => {
-    setEditing(p);
     setForm({
-      nombre: p.nombre ?? "",
-      direccion: p.direccion ?? "",
-      telefono: p.telefono ?? "",
+      nombre: "",
+      usuario: "",
+      email: "",
+      password: "",
+      tipo: "Usuario",
+    });
+    setOpen(true);
+  };
+
+  const openEdit = (u) => {
+    setEditing(u);
+    setForm({
+      nombre: u.nombre ?? "",
+      usuario: u.usuario ?? "",
+      email: u.email ?? "",
+      password: "",
+      tipo: u.tipo ?? "Usuario",
     });
     setOpen(true);
   };
 
   const save = async () => {
     if (!form.nombre.trim()) return alert("Nombre es obligatorio");
+    if (!form.usuario.trim()) return alert("Usuario es obligatorio");
+    if (!form.email.trim()) return alert("Email es obligatorio");
 
-    if (!form.nombre || form.nombre.trim().length < 3) {
+    if (!editing && !form.password.trim())
+      return alert("Password es obligatorio para crear");
+
+    const nombre = form.nombre.trim();
+    const usuario = form.usuario.trim();
+    const email = form.email.trim();
+    const password = form.password;
+
+    if (nombre.length < 3) {
       return alert("El nombre debe tener al menos 3 caracteres");
     }
 
-    if (form.direccion && form.direccion.trim().length < 5) {
-      return alert("La dirección es demasiado corta");
+    if (usuario.length < 3) {
+      return alert("El usuario debe tener al menos 3 caracteres");
     }
 
-    if (form.telefono) {
-      const telefonoRegex = /^[0-9]{8}$/;
+    if (/\s/.test(usuario)) {
+      return alert("El usuario no puede tener espacios");
+    }
 
-      if (!telefonoRegex.test(form.telefono)) {
-        return alert("El teléfono debe tener 8 números");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return alert("Email inválido");
+    }
+
+    if (!editing) {
+      if (!password || password.length < 6) {
+        return alert("La contraseña debe tener mínimo 6 caracteres");
       }
     }
+
+    if (editing && password && password.length < 6) {
+      return alert("La contraseña debe tener mínimo 6 caracteres");
+    }
+
+    if (!["Usuario", "Administrador"].includes(form.tipo)) {
+      return alert("Tipo de usuario inválido");
+    }
+
+    const payload = {
+      nombre: form.nombre.trim(),
+      usuario: form.usuario.trim(),
+      email: form.email.trim(),
+      tipo: form.tipo,
+      ...(form.password.trim() ? { password: form.password } : {}),
+    };
 
     try {
       if (editing) {
-        await api.put(`/padres/${editing.id_padre}`, form);
+        await api.put(`/users/${editing.id}`, payload);
       } else {
-        await api.post("/padres", form);
+        await api.post("/users", payload);
       }
       setOpen(false);
-      await fetchPadres();
+      await fetchUsers();
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
         JSON.stringify(err?.response?.data) ||
-        "Error guardando padre";
+        "Error guardando usuario";
       alert(msg);
     }
   };
 
-  /* const remove = async (p) => {
-    if (!confirm(`¿Eliminar "${p.nombre}"?`)) return;
+  const remove = async (u) => {
+    if (u.id === user?.id) {
+      return alert("No puedes eliminar tu propio usuario.");
+    }
+    if (!confirm(`¿Eliminar "${u.nombre}" (${u.usuario})?`)) return;
+
     try {
-      await api.delete(`/padres/${p.id_padre}`);
-      await fetchPadres();
+      await api.delete(`/users/${u.id}`);
+      await fetchUsers();
     } catch (err) {
       alert(err?.response?.data?.message || "No se pudo eliminar");
     }
-  }; */
+  };
+
+  if (!isAdmin) {
+    return (
+      <div style={{ padding: 12, background: "white", borderRadius: 12 }}>
+        No autorizado (solo Administrador).
+      </div>
+    );
+  }
 
   return (
     <div>
       <div
         style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
       >
-        <h2 style={{ margin: 0 }}>Padres</h2>
+        <h2 style={{ margin: 0 }}>Usuarios</h2>
 
-        {/* <button
+        <button
           onClick={openCreate}
           style={{
             padding: "10px 12px",
@@ -107,8 +173,8 @@ export default function Padres() {
             width: "150px",
           }}
         >
-          + Nuevo padre
-        </button> */}
+          + Nuevo usuario
+        </button>
       </div>
 
       <div style={{ marginTop: 12 }}>
@@ -119,7 +185,7 @@ export default function Padres() {
             <div style={{ overflowX: "auto" }}>
               <table
                 style={{
-                  minWidth: 700,
+                  minWidth: 800,
                   width: "100%",
                   borderCollapse: "collapse",
                 }}
@@ -133,16 +199,14 @@ export default function Padres() {
                       Nombre
                     </th>
                     <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                      Dirección
+                      Usuario
                     </th>
                     <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                      Teléfono
+                      Email
                     </th>
-
                     <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                      Alumnos
+                      Tipo
                     </th>
-
                     <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
                       Acciones
                     </th>
@@ -150,15 +214,15 @@ export default function Padres() {
                 </thead>
 
                 <tbody>
-                  {padres.map((p) => (
-                    <tr key={p.id_padre}>
+                  {users.map((u) => (
+                    <tr key={u.id}>
                       <td
                         style={{
                           padding: 8,
                           borderBottom: "1px solid #f3f4f6",
                         }}
                       >
-                        {p.id_padre}
+                        {u.id}
                       </td>
                       <td
                         style={{
@@ -166,7 +230,7 @@ export default function Padres() {
                           borderBottom: "1px solid #f3f4f6",
                         }}
                       >
-                        {p.nombre}
+                        {u.nombre}
                       </td>
                       <td
                         style={{
@@ -174,7 +238,7 @@ export default function Padres() {
                           borderBottom: "1px solid #f3f4f6",
                         }}
                       >
-                        {p.direccion || "-"}
+                        {u.usuario}
                       </td>
                       <td
                         style={{
@@ -182,7 +246,7 @@ export default function Padres() {
                           borderBottom: "1px solid #f3f4f6",
                         }}
                       >
-                        {p.telefono || "-"}
+                        {u.email}
                       </td>
                       <td
                         style={{
@@ -190,45 +254,12 @@ export default function Padres() {
                           borderBottom: "1px solid #f3f4f6",
                         }}
                       >
-                        {p.alumnos?.length ? (
-                          <div style={{ display: "grid", gap: 6 }}>
-                            {p.alumnos.map((a) => (
-                              <div
-                                key={a.id_alumno}
-                                style={{
-                                  background: "#f3f4f6",
-                                  padding: "6px 8px",
-                                  borderRadius: 8,
-                                  display: "inline-flex",
-                                  gap: 8,
-                                  alignItems: "center",
-                                  width: "fit-content",
-                                }}
-                              >
-                                <span style={{ fontWeight: 700 }}>
-                                  {a.nombre_completo}
-                                </span>
-                                <span
-                                  style={{ fontSize: 12, color: "#6b7280" }}
-                                >
-                                  ({a.pivot?.parentesco || "—"})
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span style={{ color: "#6b7280" }}>—</span>
-                        )}
+                        {u.tipo}
                       </td>
-                      <td
-                        style={{
-                          padding: 8,
-                          borderBottom: "1px solid #f3f4f6",
-                        }}
-                      >
+                      <td>
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button
-                            onClick={() => openEdit(p)}
+                            onClick={() => openEdit(u)}
                             style={{
                               backgroundColor: "blue",
                               color: "white",
@@ -237,14 +268,13 @@ export default function Padres() {
                               border: "none",
                               borderRadius: "8px",
                               padding: "8px",
-                              fontWeight: 700,
                             }}
                           >
                             Editar
                           </button>
 
-                          {/* <button
-                            onClick={() => remove(p)}
+                          <button
+                            onClick={() => remove(u)}
                             style={{
                               backgroundColor: "red",
                               color: "white",
@@ -253,20 +283,24 @@ export default function Padres() {
                               border: "none",
                               borderRadius: "8px",
                               padding: "8px",
-                              fontWeight: 700,
+                              opacity: u.id === user?.id ? 0.6 : 1,
                             }}
+                            disabled={u.id === user?.id}
+                            title={
+                              u.id === user?.id ? "No puedes eliminarte" : ""
+                            }
                           >
                             Eliminar
-                          </button> */}
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))}
 
-                  {padres.length === 0 && (
+                  {users.length === 0 && (
                     <tr>
                       <td colSpan={6} style={{ padding: 12, color: "#6b7280" }}>
-                        No hay padres
+                        No hay usuarios
                       </td>
                     </tr>
                   )}
@@ -292,15 +326,18 @@ export default function Padres() {
         >
           <div
             style={{
-              width: "min(700px, 100%)",
+              width: "min(780px, calc(100% - 32px))",
               background: "white",
               borderRadius: 14,
               padding: 14,
+              maxHeight: "90vh",
+              overflowY: "auto",
+              overflowX: "hidden",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <h3 style={{ margin: 0 }}>
-                {editing ? "Editar padre" : "Nuevo padre"}
+                {editing ? "Editar usuario" : "Nuevo usuario"}
               </h3>
               <button
                 onClick={() => setOpen(false)}
@@ -318,7 +355,7 @@ export default function Padres() {
                 marginTop: 12,
               }}
             >
-              <div style={{ gridColumn: "1 / -1" }}>
+              <div>
                 <label>Nombre *</label>
                 <input
                   value={form.nombre}
@@ -327,23 +364,45 @@ export default function Padres() {
                 />
               </div>
 
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label>Dirección</label>
+              <div>
+                <label>Usuario *</label>
                 <input
-                  value={form.direccion}
+                  value={form.usuario}
                   onChange={(e) =>
-                    setForm({ ...form, direccion: e.target.value })
+                    setForm({ ...form, usuario: e.target.value })
                   }
                   style={{ width: "100%", padding: 10, marginTop: 6 }}
                 />
               </div>
 
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label>Teléfono</label>
+              <div>
+                <label>Email *</label>
                 <input
-                  value={form.telefono}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  style={{ width: "100%", padding: 10, marginTop: 6 }}
+                />
+              </div>
+
+              <div>
+                <label>Tipo *</label>
+                <select
+                  value={form.tipo}
+                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                  style={{ width: "100%", padding: 10, marginTop: 6 }}
+                >
+                  <option value="Usuario">Usuario</option>
+                  <option value="Administrador">Administrador</option>
+                </select>
+              </div>
+
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label>Password {editing ? "" : "*"}</label>
+                <input
+                  type="password"
+                  value={form.password}
                   onChange={(e) =>
-                    setForm({ ...form, telefono: e.target.value })
+                    setForm({ ...form, password: e.target.value })
                   }
                   style={{ width: "100%", padding: 10, marginTop: 6 }}
                 />

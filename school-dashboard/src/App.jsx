@@ -6,6 +6,7 @@ import Schools from "./pages/Schools";
 import Padres from "./pages/Padres";
 import Alumnos from "./pages/Alumnos";
 import Reportes from "./pages/Reportes";
+import Users from "./pages/Users";
 
 import RequireAuth from "./auth/RequireAuth";
 import AppLayout from "./layout/AppLayout";
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/padres" element={<Padres />} />
             <Route path="/alumnos" element={<Alumnos />} />
             <Route path="/reportes" element={<Reportes />} />
+            <Route path="/users" element={<Users />} />
           </Route>
         </Route>
 

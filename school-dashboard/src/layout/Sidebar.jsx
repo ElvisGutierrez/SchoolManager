@@ -51,6 +51,9 @@ export default function Sidebar({ user, /* onLogout, */ open, onClose }) {
           <NavLink to="/reportes" style={linkStyle} onClick={onClose}>
             Reportes
           </NavLink>
+          <NavLink to="/users" style={linkStyle} onClick={onClose}>
+            Usuarios
+          </NavLink>
 
           {isAdmin && (
             <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280" }}>

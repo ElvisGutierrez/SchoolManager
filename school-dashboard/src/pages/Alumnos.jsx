@@ -153,11 +153,76 @@ export default function Alumnos() {
   };
 
   const save = async () => {
-    if (!form.nombre_completo.trim())
-      return alert("Nombre completo es obligatorio");
+    const nombre = form.nombre_completo.trim();
+    const tel = (form.telefono || "").trim();
+    const email = (form.email || "").trim();
+
+    if (nombre.length < 3) return alert("Nombre completo mínimo 3 caracteres");
+
+    if (form.direccion && form.direccion.trim().length < 5) {
+      return alert("La dirección es demasiado corta");
+    }
+
     if (!form.id_grado) return alert("Seleccione grado");
     if (!form.id_seccion) return alert("Seleccione sección");
+
     if (isAdmin && !form.id_school) return alert("Seleccione la escuela");
+
+    const generosValidos = ["Masculino", "Femenino"];
+    if (!generosValidos.includes(form.genero)) return alert("Género inválido");
+
+    if (tel) {
+      const telRegex = /^[0-9]{8}$/;
+      if (!telRegex.test(tel)) return alert("Teléfono debe tener 8 números");
+    }
+
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) return alert("Email inválido");
+    }
+
+    if (
+      form.latitud !== null &&
+      form.latitud !== "" &&
+      (form.latitud < -90 || form.latitud > 90)
+    ) {
+      return alert("Latitud inválida");
+    }
+    if (
+      form.longitud !== null &&
+      form.longitud !== "" &&
+      (form.longitud < -180 || form.longitud > 180)
+    ) {
+      return alert("Longitud inválida");
+    }
+
+    const padresConNombre = (form.padres || []).filter((p) =>
+      (p.nombre || "").trim(),
+    );
+
+    for (let i = 0; i < padresConNombre.length; i++) {
+      const p = padresConNombre[i];
+
+      const pNombre = (p.nombre || "").trim();
+      const pTel = (p.telefono || "").trim();
+      const pDir = (p.direccion || "").trim();
+      const pPar = (p.parentesco || "").trim();
+
+      if (pNombre.length < 3)
+        return alert(`Padre #${i + 1}: nombre mínimo 3 caracteres`);
+
+      if (pTel) {
+        const telRegex = /^[0-9]{8}$/;
+        if (!telRegex.test(pTel))
+          return alert(`Padre #${i + 1}: teléfono debe tener 8 números`);
+      }
+
+      if (pDir && pDir.length < 5)
+        return alert(`Padre #${i + 1}: dirección muy corta`);
+
+      if (pPar && pPar.length < 3)
+        return alert(`Padre #${i + 1}: parentesco muy corto`);
+    }
 
     try {
       const payload = {
@@ -581,7 +646,8 @@ export default function Alumnos() {
                     padding: "8px 10px",
                     borderRadius: 8,
                     border: "1px solid #ddd",
-                    background: "white",
+                    background: "black",
+                    color: "white",
                     cursor: "pointer",
                   }}
                 >

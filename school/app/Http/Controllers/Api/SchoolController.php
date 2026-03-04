@@ -28,17 +28,22 @@ class SchoolController extends Controller
         $auth = $request->user();
 
         $data = $request->validate([
-            'nombre' => ['required','string','max:150'],
+            'nombre' => ['required','string','min:3','max:150'],
             'direccion' => ['nullable','string','max:255'],
-            'email' => ['nullable','string','max:100'],
-            'foto' => ['nullable','string','max:255'],
+            'email' => ['nullable','email','max:100'],
+            'foto' => ['nullable','image','max:2048'],
+            /* 'foto' => ['nullable','url','max:255'], */
             'latitud' => ['nullable','numeric'],
             'longitud' => ['nullable','numeric'],
-
             'user_id' => ['nullable','exists:users,id'],
-        ]);
+            ]);
 
         $data['user_id'] = $data['user_id'] ?? $auth->id;
+
+         if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('schools', 'public');
+            $data['foto'] = $path; 
+        }
 
         return School::create($data);
     }
@@ -67,18 +72,23 @@ class SchoolController extends Controller
         }
 
         $data = $request->validate([
-            'nombre' => ['sometimes','required','string','max:150'],
+            'nombre' => ['sometimes','required','string','min:3','max:150'],
             'direccion' => ['nullable','string','max:255'],
-            'email' => ['nullable','string','max:100'],
-            'foto' => ['nullable','string','max:255'],
+            'email' => ['nullable','email','max:100'],
+            'foto' => ['nullable','image','max:2048'],
+            /* 'foto' => ['nullable','url','max:255'], */
             'latitud' => ['nullable','numeric'],
             'longitud' => ['nullable','numeric'],
-
             'user_id' => ['nullable','exists:users,id'],
-        ]);
+            ]);
 
         if ($user->tipo !== 'Administrador') {
             unset($data['user_id']);
+        }
+
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('schools', 'public');
+            $data['foto'] = $path;
         }
 
         $school->update($data);

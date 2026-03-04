@@ -29,7 +29,7 @@ export default function Schools() {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyAToqmMQd3DuXnyipv6GK_IAVU4wOTTsbM",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   });
 
   const fetchSchools = async () => {
@@ -60,7 +60,8 @@ export default function Schools() {
       nombre: "",
       direccion: "",
       email: "",
-      foto: "",
+      foto: null,
+      /* foto: "", */
       latitud: null,
       longitud: null,
       user_id: "",
@@ -74,7 +75,8 @@ export default function Schools() {
       nombre: s.nombre ?? "",
       direccion: s.direccion ?? "",
       email: s.email ?? "",
-      foto: s.foto ?? "",
+      foto: null,
+      /* foto: s.foto ?? "", */
       latitud: s.latitud ? Number(s.latitud) : null,
       longitud: s.longitud ? Number(s.longitud) : null,
       user_id: s.user_id ? String(s.user_id) : "",
@@ -89,6 +91,66 @@ export default function Schools() {
   };
 
   const save = async () => {
+    if (!form.nombre.trim()) return alert("Nombre es obligatorio");
+
+    if (form.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(form.email)) {
+        return alert("El email no tiene un formato válido");
+      }
+    }
+
+    if (form.foto) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+      if (!allowedTypes.includes(form.foto.type)) {
+        return alert("La foto debe ser JPG o PNG");
+      }
+
+      if (form.foto.size > 2 * 1024 * 1024) {
+        return alert("La imagen no puede ser mayor a 2MB");
+      }
+    }
+
+    const fd = new FormData();
+    fd.append("nombre", form.nombre);
+    fd.append("direccion", form.direccion || "");
+    fd.append("email", form.email || "");
+    fd.append("latitud", form.latitud ?? "");
+    fd.append("longitud", form.longitud ?? "");
+
+    if (form.foto instanceof File) {
+      fd.append("foto", form.foto);
+    }
+
+    if (isAdmin && form.user_id) {
+      fd.append("user_id", String(form.user_id));
+    }
+    /* console.log("FOTO:", form.foto, form.foto instanceof File); */
+    try {
+      if (editing) {
+        await api.post(`/schools/${editing.id_school}?_method=PUT`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await api.post("/schools", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+      setOpen(false);
+      await fetchSchools();
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        JSON.stringify(err?.response?.data) ||
+        "Error guardando escuela";
+      alert(msg);
+    }
+  };
+
+  //este pa la foto Url
+  /* const save = async () => {
     if (!form.nombre.trim()) return alert("Nombre es obligatorio");
 
     const payload = {
@@ -117,7 +179,7 @@ export default function Schools() {
       alert(msg);
     }
   };
-
+ */
   const remove = async (s) => {
     if (!confirm(`¿Eliminar "${s.nombre}"?`)) return;
     try {
@@ -179,6 +241,9 @@ export default function Schools() {
                       Coordenadas
                     </th>
                     <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
+                      Foto
+                    </th>
+                    <th style={{ padding: 8, borderBottom: "1px solid #eee" }}>
                       Acciones
                     </th>
                   </tr>
@@ -228,6 +293,21 @@ export default function Schools() {
                         {s.latitud && s.longitud
                           ? `${s.latitud}, ${s.longitud}`
                           : "-"}
+                      </td>
+                      <td>
+                        {s.foto ? (
+                          <img
+                            src={`http://127.0.0.1:8000/storage/${s.foto}`}
+                            style={{
+                              width: 60,
+                              height: 40,
+                              objectFit: "cover",
+                              borderRadius: 6,
+                            }}
+                          />
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: "8px" }}>
@@ -340,7 +420,6 @@ export default function Schools() {
                   style={{ width: "100%", padding: 10, marginTop: 6 }}
                 />
               </div>
-              {/*Modal */}
               {isAdmin && (
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label>Usuario encargado</label>
@@ -395,12 +474,19 @@ export default function Schools() {
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <label>Foto (URL)</label>
+                <label>Foto </label>
                 <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setForm({ ...form, foto: e.target.files?.[0] || null })
+                  }
+                />
+                {/* <input
                   value={form.foto}
                   onChange={(e) => setForm({ ...form, foto: e.target.value })}
                   style={{ width: "100%", padding: 10, marginTop: 6 }}
-                />
+                /> */}
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
