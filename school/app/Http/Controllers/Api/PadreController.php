@@ -71,8 +71,16 @@ class PadreController extends Controller
     }
 
     // DELETE /api/padres/{id}
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        $user = $request->user();
+
+        if ($user->tipo !== 'Administrador') {
+            return response()->json([
+                'message' => 'No autorizado'
+            ], 403);
+        }
+        
         $padre = Padre::findOrFail($id);
         $padre->delete();
 

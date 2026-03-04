@@ -108,8 +108,8 @@ export default function Schools() {
         return alert("La foto debe ser JPG o PNG");
       }
 
-      if (form.foto.size > 2 * 1024 * 1024) {
-        return alert("La imagen no puede ser mayor a 2MB");
+      if (form.foto.size > 5 * 1024 * 1024) {
+        return alert("La imagen no puede ser mayor a 5MB");
       }
     }
 

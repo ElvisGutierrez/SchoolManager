@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 export default function Padres() {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isAdmin = user?.tipo === "Administrador";
+
   const [padres, setPadres] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,7 +83,7 @@ export default function Padres() {
     }
   };
 
-  /* const remove = async (p) => {
+  const remove = async (p) => {
     if (!confirm(`¿Eliminar "${p.nombre}"?`)) return;
     try {
       await api.delete(`/padres/${p.id_padre}`);
@@ -88,7 +91,7 @@ export default function Padres() {
     } catch (err) {
       alert(err?.response?.data?.message || "No se pudo eliminar");
     }
-  }; */
+  };
 
   return (
     <div>
@@ -242,6 +245,24 @@ export default function Padres() {
                           >
                             Editar
                           </button>
+
+                          {isAdmin && (
+                            <button
+                              onClick={() => remove(p)}
+                              style={{
+                                backgroundColor: "red",
+                                color: "white",
+                                cursor: "pointer",
+                                width: "110px",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Eliminar
+                            </button>
+                          )}
 
                           {/* <button
                             onClick={() => remove(p)}

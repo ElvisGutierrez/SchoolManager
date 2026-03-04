@@ -31,7 +31,7 @@ class SchoolController extends Controller
             'nombre' => ['required','string','min:3','max:150'],
             'direccion' => ['nullable','string','max:255'],
             'email' => ['nullable','email','max:100'],
-            'foto' => ['nullable','image','max:2048'],
+            'foto' => ['nullable','image','max:5048'],
             /* 'foto' => ['nullable','url','max:255'], */
             'latitud' => ['nullable','numeric'],
             'longitud' => ['nullable','numeric'],
@@ -75,7 +75,7 @@ class SchoolController extends Controller
             'nombre' => ['sometimes','required','string','min:3','max:150'],
             'direccion' => ['nullable','string','max:255'],
             'email' => ['nullable','email','max:100'],
-            'foto' => ['nullable','image','max:2048'],
+            'foto' => ['nullable','image','max:5048'],
             /* 'foto' => ['nullable','url','max:255'], */
             'latitud' => ['nullable','numeric'],
             'longitud' => ['nullable','numeric'],
