@@ -26,6 +26,7 @@ VITE_GOOGLE_MAPS_API_KEY="Api key"
 4. npm run dev
 
 Usuarios de prueba:
+
 admin@test.com
 123456
 
