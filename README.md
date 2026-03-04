@@ -4,29 +4,26 @@ git clone https://github.com/ElvisGutierrez/SchoolManager.git
 
 Backend
 
-cd school
-composer install
-cp .env.example .env
-php artisan key:generate
-
-Configurar base de datos en `.env` 
+1. cd school
+2. composer install
+3. cp .env.example .env
+4. php artisan key:generate
+5. Configurar base de datos en `.env` 
 (DB_DATABASE=laravel
 DB_USERNAME=root
 DB_PASSWORD=***)
 
-php artisan migrate --seed
-php artisan serve
+6. php artisan migrate --seed
+7. php artisan serve
 
 Frontend
 
-cd school-dashboard
-npm install
-
-Crear `.env` con:
-
+1. cd school-dashboard
+2. npm install
+3.Crear `.env` con:
 VITE_GOOGLE_MAPS_API_KEY="Api key"
 
-npm run dev
+4. npm run dev
 
 Usuarios de prueba:
 admin@test.com
