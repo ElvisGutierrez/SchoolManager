@@ -20,7 +20,7 @@ Frontend
 
 1. cd school-dashboard
 2. npm install
-3.Crear `.env` con:
+3. Crear `.env` con:
 VITE_GOOGLE_MAPS_API_KEY="Api key"
 
 4. npm run dev
