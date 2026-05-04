@@ -13,7 +13,7 @@ WORKDIR /app/school
 
 RUN composer install
 
-RUN php artisan migrate --force
+/* RUN php artisan migrate --force */
 
 EXPOSE 10000
 
